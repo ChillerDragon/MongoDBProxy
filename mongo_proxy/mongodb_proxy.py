@@ -17,6 +17,13 @@ Copyright 2013 Gustav Arngarden
 import time
 import pymongo
 
+from bson import BSON
+from base64 import b64encode
+import os
+query_pid = None
+query_file = None
+query_pattern = '/tmp/query-log.%d'
+
 def get_methods(*objs):
     return set(
         attr
@@ -79,6 +86,21 @@ class Executable:
         max_time = self.wait_time
         while True:
             try:
+                if self.method.__name__ in ('find', 'find_one') and \
+                        self.method.im_self.database.name in ('tickplant', 'quanto_production_phys'):
+                    global query_pid
+                    global query_file
+                    if os.getpid() != query_pid:
+                        query_pid = os.getpid()
+                        query_file = open(query_pattern % query_pid, 'w')
+                    query = {'method': self.method.__name__,
+                             'collection': self.method.im_self.name,
+                             'spec': kwargs.get('spec', {}),
+                             'limit': kwargs.get('limit', None),
+                             'sort': kwargs.get('sort', None)}
+                    query_file.write('# %s\n%s\n' %
+                                     (query, b64encode(BSON.encode(query))))
+                    query_file.flush()
                 return self.method(*args, **kwargs)
             except pymongo.errors.AutoReconnect:
                 end = time.time()
