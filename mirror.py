@@ -6,7 +6,7 @@ import sys
 
 ctr.production()
 fin = ctr.fin()
-tickplant = ctr.tickplant()
+tickplant = ctr.live()
 local = pymongo.MongoClient()['findb']
 
 done = set()
