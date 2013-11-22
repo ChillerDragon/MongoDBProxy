@@ -1,12 +1,15 @@
-import ctr
 import pymongo
 from base64 import b64decode
 from bson import BSON
 import sys
+from qexec.db import (
+    setup_fin_db, setup_live_db, FinDbConnection, LiveDbConnection)
 
-ctr.production()
-fin = ctr.fin()
-tickplant = ctr.live()
+setup_fin_db()
+setup_live_db()
+
+_, fin = FinDbConnection.get()
+_, tickplant = LiveDbConnection.get()
 local = pymongo.MongoClient()['findb']
 
 done = set()
