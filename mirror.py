@@ -51,7 +51,10 @@ for line in open('/tmp/queries', 'r'):
         sys.stderr.write('.')
     sys.stderr.write('\n')
 
-    if remote == tickplant:
+    # MongoDBProxy objects don't like being compared with ==. Rather
+    # than waste time figuring out why that is, just compare their
+    # id's instead.
+    if id(remote) == id(tickplant):
         local[query['collection']].ensure_index([
             ('dt', pymongo.ASCENDING),
             ('sid', pymongo.DESCENDING)])
