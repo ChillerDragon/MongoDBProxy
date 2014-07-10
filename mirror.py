@@ -32,9 +32,8 @@ for line in open('/tmp/queries', 'r'):
     args = {}
     if query['method'] == 'find_one':
         query['limit'] = 1
-    else:
-        if query['sort']:
-            args['sort'] = query['sort']
+    if query['sort']:
+        args['sort'] = query['sort']
     args['spec'] = query['spec'] or {}
     if query['limit']:
         args['limit'] = query['limit'] 
