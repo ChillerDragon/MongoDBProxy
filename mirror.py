@@ -8,8 +8,8 @@ from qexec.db import (
 setup_fin_db()
 setup_live_db()
 
-_, fin = FinDbConnection.get()
-_, tickplant = LiveDbConnection.get()
+fin = FinDbConnection.get()
+tickplant = LiveDbConnection.get()
 local = pymongo.MongoClient()['findb']
 
 done = set()
