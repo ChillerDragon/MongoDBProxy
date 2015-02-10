@@ -87,7 +87,8 @@ class Executable:
         while True:
             try:
                 if self.method.__name__ in ('find', 'find_one') and \
-                        self.method.im_self.database.name in ('tickplant', 'quanto_production_phys'):
+                   self.method.im_self.database.name in (
+                       'tickplant', 'quanto_production_phys', 'findb'):
                     global query_pid
                     global query_file
                     if os.getpid() != query_pid:
