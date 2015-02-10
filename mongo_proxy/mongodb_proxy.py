@@ -96,7 +96,8 @@ class Executable:
                         query_file = open(query_pattern % query_pid, 'w')
                     query = {'method': self.method.__name__,
                              'collection': self.method.im_self.name,
-                             'spec': kwargs.get('spec', {}),
+                             'spec': kwargs.get(
+                                 'spec', args[0] if len(args) else {}),
                              'limit': kwargs.get('limit', None),
                              'sort': kwargs.get('sort', None)}
                     query_file.write('# %s\n%s\n' %
