@@ -36,8 +36,8 @@ for line in open('/tmp/queries', 'r'):
         args['sort'] = query['sort']
     args['spec'] = query['spec'] or {}
     if query['limit']:
-        args['limit'] = query['limit'] 
-    
+        args['limit'] = query['limit']
+
     if query['collection'][0:26] == 'equity.trades.minute.live.':
         remote = tickplant
     else:
