@@ -33,6 +33,12 @@ done = set()
 doit = True
 collections_accessed = set()
 
+if args.wipe_collections:
+    for collection in local.collection_names():
+        if collection.startswith('system.'):
+            continue
+        local[collection].remove()
+
 for line in open('/tmp/queries', 'r'):
     doit = not doit
     if not doit:
@@ -45,7 +51,7 @@ for line in open('/tmp/queries', 'r'):
     except:
         print line
         raise
-    if query['collection'][0:7] == 'system.':
+    if query['collection'].startswith('system.'):
         continue
     kwargs = {}
     if query['method'] == 'find_one':
@@ -60,11 +66,6 @@ for line in open('/tmp/queries', 'r'):
         remote = tickplant
     else:
         remote = fin
-
-    if query['collection'] not in collections_accessed:
-        if args.wipe_collections:
-            local[query['collection']].remove()
-        collections_accessed.add(query['collection'])
 
     cursor = remote[query['collection']].find(**kwargs)
     sys.stderr.write('%s %d: ' % (query['collection'], cursor.count()))
