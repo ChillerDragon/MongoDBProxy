@@ -1,3 +1,4 @@
+import argparse
 import pymongo
 from base64 import b64decode
 from bson import BSON
@@ -5,12 +6,24 @@ import sys
 from qexec.db import (
     setup_fin_db, setup_live_db, FinDbConnection, LiveDbConnection)
 
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Mirror data from findb and '
+                                     'tickplant into local database')
+    parser.add_argument('--db-host', help='host[:port] for local database',
+                        default='localhost')
+    parser.add_argument('--db-name', help='Local database name',
+                        default='findb')
+    return parser.parse_args()
+
+args = parse_args()
+
 setup_fin_db()
 setup_live_db()
 
 fin = FinDbConnection.get()
 tickplant = LiveDbConnection.get()
-local = pymongo.MongoClient()['findb']
+local = pymongo.MongoClient(args.db_host)[args.db_name]
 
 done = set()
 
@@ -29,21 +42,21 @@ for line in open('/tmp/queries', 'r'):
         raise
     if query['collection'][0:7] == 'system.':
         continue
-    args = {}
+    kwargs = {}
     if query['method'] == 'find_one':
         query['limit'] = 1
     if query['sort']:
-        args['sort'] = query['sort']
-    args['spec'] = query['spec'] or {}
+        kwargs['sort'] = query['sort']
+    kwargs['spec'] = query['spec'] or {}
     if query['limit']:
-        args['limit'] = query['limit']
+        kwargs['limit'] = query['limit']
 
     if query['collection'][0:26] == 'equity.trades.minute.live.':
         remote = tickplant
     else:
         remote = fin
 
-    cursor = remote[query['collection']].find(**args)
+    cursor = remote[query['collection']].find(**kwargs)
     sys.stderr.write('%s %d: ' % (query['collection'], cursor.count()))
     for doc in cursor:
         local[query['collection']].save(doc)
