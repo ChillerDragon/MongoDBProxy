@@ -14,6 +14,9 @@ def parse_args():
                         default='localhost')
     parser.add_argument('--db-name', help='Local database name',
                         default='findb')
+    parser.add_argument('--wipe-collections', action='store_true',
+                        default=False, help='Drop all documents in each '
+                        'collection before saving any data into it')
     return parser.parse_args()
 
 args = parse_args()
@@ -28,6 +31,8 @@ local = pymongo.MongoClient(args.db_host)[args.db_name]
 done = set()
 
 doit = True
+collections_accessed = set()
+
 for line in open('/tmp/queries', 'r'):
     doit = not doit
     if not doit:
@@ -55,6 +60,11 @@ for line in open('/tmp/queries', 'r'):
         remote = tickplant
     else:
         remote = fin
+
+    if query['collection'] not in collections_accessed:
+        if args.wipe_collections:
+            local[query['collection']].remove()
+        collections_accessed.add(query['collection'])
 
     cursor = remote[query['collection']].find(**kwargs)
     sys.stderr.write('%s %d: ' % (query['collection'], cursor.count()))
