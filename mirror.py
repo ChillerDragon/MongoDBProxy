@@ -17,6 +17,8 @@ def parse_args():
     parser.add_argument('--wipe-collections', action='store_true',
                         default=False, help='Drop all documents in each '
                         'collection before saving any data into it')
+    parser.add_argument('--query-file', help='File containing logged queries '
+                        'to mirror', default='/tmp/queries')
     return parser.parse_args()
 
 args = parse_args()
@@ -39,7 +41,7 @@ if args.wipe_collections:
             continue
         local[collection].remove()
 
-for line in open('/tmp/queries', 'r'):
+for line in open(args.query_file, 'r'):
     doit = not doit
     if not doit:
         continue
