@@ -62,7 +62,7 @@ class DurableCursor(object):
             **kwargs):
 
         self.collection = collection
-        self.spec = spec
+        self._spec = spec
         self.fields = fields
         self.sort = sort
         self.slave_okay = slave_okay
@@ -80,12 +80,16 @@ class DurableCursor(object):
         self.disconnect_on_timeout = disconnect_on_timeout
         self.kwargs = kwargs
 
-        self.cursor = self.fetch_cursor(self.counter, self.kwargs)
+        self.cursor = None
 
     def __iter__(self):
         return self
 
-    def fetch_cursor(self, count, cursor_kwargs):
+    @property
+    def spec(self):
+        return self._spec
+
+    def fetch_cursor(self, count, cursor_kwargs, use_skip=True):
         """
         Gets a cursor for the options set in the object.
 
@@ -111,7 +115,7 @@ class DurableCursor(object):
             sort=self.sort,
             slave_okay=self.slave_okay,
             tailable=self.tailable,
-            skip=count,
+            skip=count if use_skip else 0,
             limit=limit,
             hint=self.hint,
             **cursor_kwargs
@@ -137,6 +141,9 @@ class DurableCursor(object):
         return self.tailable and self.cursor.alive
 
     def next(self):
+        if self.cursor is None:
+            self.cursor = self.fetch_cursor(self.counter, self.kwargs)
+
         try:
             next_record = self.cursor.next()
 
